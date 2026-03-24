@@ -1,0 +1,21 @@
+# DHCP server configuration
+
+interface: veth-dhcp
+
+subnet: "10.0.2.0"
+subnet_mask: "???"
+
+# TODO: fill in your network settings
+server_ip: "???"
+gateway: "???"
+dns: "???"
+
+# lease duration in seconds
+lease_time: 3600
+
+# static reservations — these IPs are locked to a specific MAC, never offered to other clients
+# note: network address, broadcast, server IP and router are always reserved automatically
+# TODO: add a reservation for each host that needs a fixed IP
+reservations:
+  - ip: "???"
+    mac: "???"
