@@ -15,6 +15,9 @@ const bit<8> PROTO_UDP = 0x11;
 const bit<9> LAN_PORT       = 1;
 const bit<9> LAN_PORT2      = 2;
 const bit<9> ARP_PROXY_PORT = 3;
+const bit<9> DHCP_CNF_PORT   = 4;
+const bit<16> DHCP_SERVER_PORT = 67;
+const bit<16> DHCP_CLIENT_PORT = 68;
 // TODO: add a constant for the DHCP server cNF port (port 4)
 // TODO: add constants for the DHCP server and client UDP ports (67 and 68)
 
@@ -40,6 +43,8 @@ struct headers {
     arp_t       arp;
     ipv4_t      ipv4;
     transport_t transport;
+    udp_tail_t  udp_tail;
+    dhcp_t      dhcp;
     // TODO: add udp_tail_t and dhcp_t fields here (see headers.p4 for definitions)
 }
 
@@ -72,7 +77,7 @@ parser MyParser(packet_in packet,
         packet.extract(hdr.ipv4);
         transition select(hdr.ipv4.protocol) {
             PROTO_TCP: parse_transport;
-            PROTO_UDP: parse_transport;  // TODO: change to parse_udp once you add that state
+            PROTO_UDP: parse_udp;  // TODO: change to parse_udp once you add that state
             default:   accept;
         }
     }
@@ -81,11 +86,24 @@ parser MyParser(packet_in packet,
         packet.extract(hdr.transport);
         transition accept;
     }
-
+    state parse_udp {
+        packet.extract(hdr.transport);
+        transition select(hdr.transport.dstPort, hdr.transport.srcPort) {
+            (DHCP_SERVER_PORT, _): skip_udp_tail;
+            (DHCP_CLIENT_PORT, _): skip_udp_tail;
+            (_, DHCP_SERVER_PORT): skip_udp_tail;
+            (_, DHCP_CLIENT_PORT): skip_udp_tail;
+            default: accept;
+        }
+    }
     // TODO: add a parse_udp state
     //       extract hdr.transport (srcPort + dstPort), then select:
     //         DHCP_SERVER_PORT or DHCP_CLIENT_PORT → skip_udp_tail
     //         default                              → accept
+    state skip_udp_tail {
+        packet.extract(hdr.udp_tail);
+        transition parse_dhcp;
+    }
 
     // TODO: add a skip_udp_tail state
     //       extract hdr.udp_tail, then transition to parse_dhcp
@@ -93,7 +111,11 @@ parser MyParser(packet_in packet,
     //       of the UDP header (srcPort + dstPort), reusing the same header for TCP and UDP.
     //       The remaining 4 bytes (length + checksum) are still sitting in the packet buffer.
     //       Extract them into udp_tail so the deparser can re-attach them and keep the packet well-formed.
-
+    state parse_dhcp {
+        packet.extract(hdr.dhcp);
+        transition accept;
+    }
+}
     // TODO: add a parse_dhcp state
     //       extract hdr.dhcp, then transition to accept
 }
@@ -198,6 +220,22 @@ control MyIngress(inout headers hdr,
             } else {
                 drop();
             }
+        } else if (hdr.dhcp.isValid()) {
+            // DHCP bypasses the firewall — redirect to DHCP cNF or back to LAN2
+            if (hdr.dhcp.op == 1) {
+                // op=1: client→server (Discover / Request from LAN2 hosts)
+                // only serve LAN2; drop DHCP from LAN1
+                if (std_meta.ingress_port == LAN_PORT2) {
+                    forward_to_port(DHCP_CNF_PORT);
+                } else {
+                    drop();
+                }
+            } else if (hdr.dhcp.op == 2) {
+                // op=2: server→client (Offer / Ack from the DHCP cNF)
+                forward_to_port(LAN_PORT2);
+            } else {
+                drop();
+            }
         // TODO: add DHCP handling here, before the firewall logic
         //       DHCP must bypass the bloom filter (no prior flow to match against)
         //       fwd based on dhcp header fields, dhcp-server only serves LAN2
@@ -275,6 +313,8 @@ control MyDeparser(packet_out packet, in headers hdr) {
         packet.emit(hdr.arp);
         packet.emit(hdr.ipv4);
         packet.emit(hdr.transport);
+        packet.emit(hdr.udp_tail);
+        packet.emit(hdr.dhcp);
         // TODO: emit hdr.udp_tail and hdr.dhcp here
         //       emit() is a no-op for invalid headers — safe to always call
     }

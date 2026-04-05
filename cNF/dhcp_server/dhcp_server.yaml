@@ -3,12 +3,12 @@
 interface: veth-dhcp
 
 subnet: "10.0.2.0"
-subnet_mask: "???"
+subnet_mask: "255.255.255.0"
 
 # TODO: fill in your network settings
-server_ip: "???"
-gateway: "???"
-dns: "???"
+server_ip: "10.0.2.254"
+gateway: "10.0.2.254"
+dns: "8.8.8.8"
 
 # lease duration in seconds
 lease_time: 3600
@@ -17,5 +17,9 @@ lease_time: 3600
 # note: network address, broadcast, server IP and router are always reserved automatically
 # TODO: add a reservation for each host that needs a fixed IP
 reservations:
-  - ip: "???"
-    mac: "???"
+  - ip: "10.0.2.4"
+    mac: "aa:00:00:02:04"
+  - ip: "10.0.2.5"
+    mac: "aa:00:00:02:05"
+  - ip: "10.0.2.6"
+    mac: "aa:00:00:02:06"
