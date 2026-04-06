@@ -44,7 +44,7 @@ def load_config(path):
 
 def build_pool(config):
     """Build the IP pool for the full subnet.
-    Each entry: {mac, reserved}
+    Each entry: {mac, reserved}"""
     import ipaddress
 
     network = ipaddress.IPv4Network(
