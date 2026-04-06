@@ -51,7 +51,7 @@ def build_pool(config):
         f"{config['subnet']}/{config['subnet_mask']}", strict=True
     )
 
-    always reserved={
+    always_reserved={
      str(network.network_address), #.0
      str(network.broadcast_address), #.255
      config["server_ip"], 
@@ -73,12 +73,12 @@ def build_pool(config):
         pool[ip] = {"mac": mac, "reserved": reserved}
  
     return pool
-
+    """
     TODO: generate all IPs in the subnet from config["subnet"] and config["subnet_mask"]
     TODO: mark as reserved: network address, broadcast, server_ip, gateway
     TODO: apply static reservations from config["reservations"] (ip locked to mac)
     """
-    # TODO
+    
 
 
 def get_next_ip(pool, offered_pool):
@@ -128,7 +128,7 @@ def handle_dhcp(packet, interface, config, pool, offered_pool):
  
     def send_reply(msg_type_str, offered_ip, client_mac_raw):
         reply = (
-            Ether(dst="ff:ff:ff:ff:ff:ff", src="ff:ff:ff:ff:ff:ff") /
+            Ether(dst="ff:ff:ff:ff:ff:ff") /
             IP(src=server_ip, dst="255.255.255.255") /
             UDP(sport=67, dport=68) /
             BOOTP(
