@@ -128,7 +128,7 @@ def handle_dhcp(packet, interface, config, pool, offered_pool):
  
     def send_reply(msg_type_str, offered_ip, client_mac_raw):
         reply = (
-            Ether(dst="ff:ff:ff:ff:ff:ff", src="ff:ff:ff:ff:ff:ff") /
+            Ether(dst="ff:ff:ff:ff:ff:ff") /
             IP(src=server_ip, dst="255.255.255.255") /
             UDP(sport=67, dport=68) /
             BOOTP(
