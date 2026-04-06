@@ -18,8 +18,8 @@ lease_time: 3600
 # TODO: add a reservation for each host that needs a fixed IP
 reservations:
   - ip: "10.0.2.4"
-    mac: "aa:00:00:02:04"
+    mac: "aa:00:00:00:02:04"
   - ip: "10.0.2.5"
-    mac: "aa:00:00:02:05"
+    mac: "aa:00:00:00:02:05"
   - ip: "10.0.2.6"
-    mac: "aa:00:00:02:06"
+    mac: "aa:00:00:00:02:06"
