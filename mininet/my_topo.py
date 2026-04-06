@@ -53,9 +53,7 @@ class MyTopo(Topo):
         h6 = self.addHost("h6", mac=host_mac(2,6))
         # TODO: once your DHCP server is working, comment out the three lines above
         #       and uncomment the three lines below (no static IP — dhclient will assign one)
-        # h4 = self.addHost("h4", mac=host_mac(2,4))
-        # h5 = self.addHost("h5", mac=host_mac(2,5))
-        # h6 = self.addHost("h6", mac=host_mac(2,6))
+        
 
         # -------------------- creating links -------------------------
         # --------------------- hosts to l2 switch -------------------
