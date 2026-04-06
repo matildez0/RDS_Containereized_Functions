@@ -118,7 +118,7 @@ parser MyParser(packet_in packet,
 }
     // TODO: add a parse_dhcp state
     //       extract hdr.dhcp, then transition to accept
-}
+
 
 // CHECKSUM VERIFICATION ********************************************************
 
